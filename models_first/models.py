@@ -19,6 +19,9 @@ class Client(models.Model):
 class Topic(models.Model):
     topic_name = models.CharField(max_length=50)
 
+    def return_dict(self):
+        return {'pk': self.pk, 'topic_name': self.topic_name}
+
 
 class Advert(models.Model):
     user = models.ManyToManyField(Client)
