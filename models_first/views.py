@@ -85,7 +85,7 @@ def adverts(request):
 
     if request.method == 'POST':
         '''
-        waiting json like: {"topic_name": "postman2"}
+        {"pk": "2", "cost": "6", "title": "postman_title", "body": "postman_body"}
         '''
         try:
             received_data = json.loads((request.body).decode('utf-8'))
