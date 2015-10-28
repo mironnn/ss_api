@@ -15,6 +15,19 @@ class Client(models.Model):
     city = models.CharField(max_length=100)
     preferences = models.CharField(max_length=2, choices=USER_PREFERENCES)
 
+    def return_dict(self):
+        return {'pk': self.pk,
+                'username': self.user.username,
+                'first_name': self.user.first_name,
+                'last_name': self.user.last_name,
+                'email': self.user.email,
+                'city': self.city,
+                'preferences': self.preferences
+                }
+
+    def get_username(self):
+        return self.user.username
+
 
 class Topic(models.Model):
     topic_name = models.CharField(max_length=50)
@@ -24,10 +37,20 @@ class Topic(models.Model):
 
 
 class Advert(models.Model):
-    user = models.ManyToManyField(Client)
+    user = models.ForeignKey(User)
     title = models.CharField(max_length=50)
     body = models.TextField()
     date = models.DateTimeField(default=django.utils.timezone.now)
-    topic = models.ManyToManyField(Topic)
+    topic = models.ManyToManyField(Topic, blank=True)
     archive = models.BooleanField(default=False)
-    cost = models.DecimalField(max_digits=15, decimal_places=5)
+    cost = models.DecimalField(max_digits=15, decimal_places=2)
+
+    def return_dict(self):
+        return {'user': self.user.get_username(),
+                'title': self.title,
+                'body': self.body,
+                'date': self.date.strftime("%d.%m.%Y"),
+                # 'topic': self.topic,
+                'archive': self.archive,
+                'cost': str(self.cost),
+                }

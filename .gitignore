@@ -19,24 +19,16 @@ pip-delete-this-directory.txt
 *.sqlite3
 
 # MySQL confs
-my_avp.cnf
-my_avp_web1c.cnf
+
 
 # pycharm settings
 .idea/
 
 # Local settings(add here)
-optim_dealer/settings_glocal.py
-optim_dealer/settings_il.py
-optim_dealer/settings_mironnn.py
-optim_dealer/settings_dev_avp.py
-settings_dev_avp.py
+
 
 # server static(add here)
 static_server/
 
 # media(add here)
 media/
-
-# Pricelists
-*.xls
