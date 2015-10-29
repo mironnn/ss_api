@@ -77,9 +77,27 @@ def topics(request, pk=None):
 @csrf_exempt
 def adverts(request):
 
+    def validate(my_filters):
+        res_dict = my_filters.copy()
+        for k, v in my_filters.items():
+            if not v:
+                del res_dict[k]
+        return res_dict
+
     if request.method == 'GET':
-        adverts_obj = Advert.objects.all()
-        adverts = [advert.return_dict() for advert in adverts_obj]
+        '''
+        waiting url for example:
+        http://127.0.0.1:8100/api/adverts/?user_id=2
+        http://127.0.0.1:8100/api/adverts/?topic=3&use_id=2
+        '''
+        kwargs = {'user_id': request.GET.get('user_id'), 'topic': request.GET.get('topic', '')}
+        values = validate(kwargs)
+
+        if kwargs['user_id'] or kwargs['topic']:
+            adverts = [advert.return_dict() for advert in Advert.objects.filter(**values)]
+        else:
+            adverts_obj = Advert.objects.all()
+            adverts = [advert.return_dict() for advert in adverts_obj]
         data = {'adverts': adverts}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
