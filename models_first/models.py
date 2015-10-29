@@ -51,7 +51,7 @@ class Advert(models.Model):
                 'title': self.title,
                 'body': self.body,
                 'date': self.date.strftime("%d.%m.%Y"),
-                # 'topic': self.topic,
+                'topic': [topic.topic_name for topic in self.topic.all()],
                 'archive': self.archive,
                 'cost': str(self.cost),
                 }

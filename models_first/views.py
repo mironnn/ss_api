@@ -9,6 +9,12 @@ from models_first.models import Topic, Client, Advert
 
 
 def get_model_filter_values(request, model):
+    """
+    Create values for model filter
+    :param request: request with attributes
+    :param model: model class for which we creates filter
+    :return: keys and values for model filter: dict with attributes and values from request GET
+    """
     kwargs = {key: val for key, val in request.GET.items()}
     return validate(kwargs, [field.name for field in model._meta.get_fields()])
 
@@ -78,7 +84,7 @@ def topics(request, id=None):
             return HttpResponse(status=400)
         try:
             received_data = json.loads((request.body).decode('utf-8'))['topic_name']
-        except KeyError:
+        except (KeyError, ValueError):
             return HttpResponse(status=400)
         else:
             update_topic.topic_name = received_data
