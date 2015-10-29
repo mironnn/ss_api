@@ -16,7 +16,7 @@ class Client(models.Model):
     preferences = models.CharField(max_length=2, choices=USER_PREFERENCES)
 
     def return_dict(self):
-        return {'pk': self.pk,
+        return {'user': self.user.id,
                 'username': self.user.username,
                 'first_name': self.user.first_name,
                 'last_name': self.user.last_name,
@@ -33,7 +33,8 @@ class Topic(models.Model):
     topic_name = models.CharField(max_length=50)
 
     def return_dict(self):
-        return {'pk': self.pk, 'topic_name': self.topic_name}
+        return {'id': self.id,
+                'topic_name': self.topic_name}
 
 
 class Advert(models.Model):
@@ -46,7 +47,7 @@ class Advert(models.Model):
     cost = models.DecimalField(max_digits=15, decimal_places=2)
 
     def return_dict(self):
-        return {'user': self.user.get_username(),
+        return {'user': self.user.pk,
                 'title': self.title,
                 'body': self.body,
                 'date': self.date.strftime("%d.%m.%Y"),

@@ -1,11 +1,16 @@
 import json
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from models_first.validators import validate
 from models_first.models import Topic, Client, Advert
+
+
+def get_model_filter_values(request, model):
+    kwargs = {key: val for key, val in request.GET.items()}
+    return validate(kwargs, [field.name for field in model._meta.get_fields()])
 
 
 def home(request):
@@ -15,18 +20,37 @@ def home(request):
 def users(request):
 
     if request.method == 'GET':
-        clients_obj = Client.objects.all()
-        clients = [client.return_dict() for client in clients_obj]
+
+        values = get_model_filter_values(request, Client)
+
+        if values:
+            try:
+                clients = [advert.return_dict() for advert in Client.objects.filter(**values)]
+            except ValueError:
+                return HttpResponse(status=400)
+        else:
+            clients_obj = Client.objects.all()
+            clients = [client.return_dict() for client in clients_obj]
         data = {'users': clients}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 @csrf_exempt
-def topics(request, pk=None):
+def topics(request, id=None):
 
     if request.method == 'GET':
-        topics_obj = Topic.objects.all()
-        topics = [topic.return_dict() for topic in topics_obj]
+
+        values = get_model_filter_values(request, Topic)
+
+        if values:
+            try:
+                topics = [advert.return_dict() for advert in Topic.objects.filter(**values)]
+            except ValueError:
+                return HttpResponse(status=400)
+        else:
+            topics_obj = Topic.objects.all()
+            topics = [topic.return_dict() for topic in topics_obj]
+
         data = {'topics': topics}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -44,12 +68,12 @@ def topics(request, pk=None):
             data = {'new_topic': new_topic.return_dict()}
             return HttpResponse(json.dumps(data), content_type='application/json')
 
-    if request.method == 'PUT' and pk:
+    if request.method == 'PUT' and id:
         '''
         waiting json like: {"topic_name": "postman2"}
         '''
         try:
-            update_topic = Topic.objects.get(pk=pk)
+            update_topic = Topic.objects.get(id=id)
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
         try:
@@ -62,9 +86,9 @@ def topics(request, pk=None):
             data = {'new_topic': update_topic.return_dict()}
             return HttpResponse(json.dumps(data), content_type='application/json')
 
-    if request.method == 'DELETE' and pk:
+    if request.method == 'DELETE' and id:
         try:
-            del_topic = Topic.objects.get(pk=pk)
+            del_topic = Topic.objects.get(id=id)
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
         else:
@@ -74,43 +98,41 @@ def topics(request, pk=None):
     else:
         return HttpResponse(status=400)
 
+
 @csrf_exempt
 def adverts(request):
-
-    def validate(my_filters):
-        res_dict = my_filters.copy()
-        for k, v in my_filters.items():
-            if not v:
-                del res_dict[k]
-        return res_dict
 
     if request.method == 'GET':
         '''
         waiting url for example:
-        http://127.0.0.1:8100/api/adverts/?user_id=2
-        http://127.0.0.1:8100/api/adverts/?topic=3&use_id=2
+        http://127.0.0.1:8100/api/adverts/?user=2
+        http://127.0.0.1:8100/api/adverts/?topic=3&user=2
         '''
-        kwargs = {'user_id': request.GET.get('user_id'), 'topic': request.GET.get('topic', '')}
-        values = validate(kwargs)
 
-        if kwargs['user_id'] or kwargs['topic']:
-            adverts = [advert.return_dict() for advert in Advert.objects.filter(**values)]
+        values = get_model_filter_values(request, Advert)
+
+        if values:
+            try:
+                adverts = [advert.return_dict() for advert in Advert.objects.filter(**values)]
+            except (ValueError, ValidationError):
+                return HttpResponse(status=400)
         else:
             adverts_obj = Advert.objects.all()
             adverts = [advert.return_dict() for advert in adverts_obj]
+
         data = {'adverts': adverts}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
     if request.method == 'POST':
         '''
-        {"pk": "2", "cost": "6", "title": "postman_title", "body": "postman_body"}
+        {"id": "2", "cost": "6", "title": "postman_title", "body": "postman_body"}
         '''
         try:
             received_data = json.loads((request.body).decode('utf-8'))
         except ValueError:
             return HttpResponse(status=400)
         try:
-            user_obj = User.objects.get(pk=received_data.get('pk'))
+            user_obj = User.objects.get(id=received_data.get('id'))
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
         else:

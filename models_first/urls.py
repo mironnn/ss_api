@@ -11,9 +11,10 @@ urlpatterns = patterns('models_first.views',
 
     #topics
     url(r'^topics/$', 'topics', name='get_topics'),
-    url(r'^topics/(?P<pk>\d+)$', 'topics', name='update_topic'),
+    url(r'^topics/(?P<id>\d+)$', 'topics', name='update_topic'),
 
     #advert
     url(r'^adverts/$', 'adverts', name='get_adverts'),
+    url(r'^adverts/(?P<id>\d+)$', 'adverts', name='update_adverts'),
 
 )
