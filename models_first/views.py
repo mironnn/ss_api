@@ -62,7 +62,8 @@ def topics(request, id=None):
 
     if request.method == 'POST':
         '''
-        waiting json like: {"topic_name": "postman2"}
+        waiting json for example:
+        {"topic_name": "postman2"}
         '''
         try:
             received_data = json.loads((request.body).decode('utf-8'))['topic_name']
@@ -76,7 +77,8 @@ def topics(request, id=None):
 
     if request.method == 'PUT' and id:
         '''
-        waiting json like: {"topic_name": "postman2"}
+        waiting json for example:
+        {"topic_name": "postman2"}
         '''
         try:
             update_topic = Topic.objects.get(id=id)
@@ -131,14 +133,19 @@ def adverts(request):
 
     if request.method == 'POST':
         '''
-        {"id": "2", "cost": "6", "title": "postman_title", "body": "postman_body"}
+        waiting json for example:
+        {"user":"3", "title": "many_to_many_test_title", "body": "many_to_many_test_body", "topic":"15", "cost": "5"}
         '''
         try:
             received_data = json.loads((request.body).decode('utf-8'))
         except ValueError:
             return HttpResponse(status=400)
         try:
-            user_obj = User.objects.get(id=received_data.get('id'))
+            user_obj = User.objects.get(id=received_data.get('user'))
+        except ObjectDoesNotExist:
+            return HttpResponse(status=400)
+        try:
+            topic_obj = Topic.objects.get(id=received_data.get('topic'))
         except ObjectDoesNotExist:
             return HttpResponse(status=400)
         else:
@@ -147,6 +154,7 @@ def adverts(request):
                                                body=received_data.get('body'),
                                                cost=received_data.get('cost'),
                                                )
+            new_advert.topic.add(topic_obj)
             data = {'new_topic': new_advert.return_dict()}
             return HttpResponse(json.dumps(data), content_type='application/json')
 
